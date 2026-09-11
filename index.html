@@ -6,7 +6,8 @@
 <title>Pro Studio</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
-html,body{width:100%;height:100%;overflow:hidden;background:#1e1e28;color:#e0e0e8;font:13px -apple-system,'Segoe UI',Tahoma,sans-serif;touch-action:none;overscroll-behavior:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#1e1e28;color:#e0e0e8;font:13px -apple-system,'Segoe UI',Tahoma,sans-serif;touch-action:none;overscroll-behavior:none;-webkit-touch-callout:none;-webkit-user-drag:none}
+#app,#main,#left,#center,#right,#top,#bot,#mc,#oc{touch-action:none}
 #app{display:flex;flex-direction:column;width:100%;height:100%}
 #top{height:44px;background:#2a2a38;display:flex;align-items:center;padding:0 8px;gap:4px;border-bottom:1px solid #3a3a4a;flex-shrink:0}
 #main{flex:1;display:flex;min-height:0;position:relative}
@@ -561,6 +562,7 @@ function addWithSym(sh){
 
 function onDown(e){
   if(e.pointerType==='mouse'&&e.button!==0&&e.button!==1) return;
+  try{ center.setPointerCapture(e.pointerId); }catch(err){}
   pointers[e.pointerId]={x:e.clientX,y:e.clientY};
   var cnt=0; for(var k in pointers) cnt++;
   if(cnt===2){ startPinch(); return; }
@@ -1139,11 +1141,13 @@ document.getElementById('lOp').oninput=function(e){
   render();
 };
 
-center.addEventListener('pointerdown', onDown);
-center.addEventListener('pointermove', onMove);
+center.addEventListener('pointerdown', function(e){ e.preventDefault(); onDown(e); }, {passive:false});
+center.addEventListener('pointermove', function(e){ e.preventDefault(); onMove(e); }, {passive:false});
 center.addEventListener('pointerup', onUp);
 center.addEventListener('pointercancel', onUp);
-center.addEventListener('pointerleave', onUp);
+center.addEventListener('pointerleave', function(e){
+  if(e.pointerType==='mouse' && e.buttons===0) onUp(e);
+});
 center.addEventListener('contextmenu', function(e){ e.preventDefault(); });
 center.addEventListener('wheel', function(e){
   e.preventDefault();
